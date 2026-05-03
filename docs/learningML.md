@@ -324,3 +324,5 @@ investment vector = numbers that describe the asset
  esg_score,
  is_index_fund
 ]
+
+Both Vectors get added to create a combined_vector which gets put through the model
