@@ -275,3 +275,52 @@ The output scores for many outputs and then sorts
 19. Add feedback to dataset
 
 20. Retrain model
+
+
+##FinMatch Specific
+
+User Vector = numers that describe the person
+
+[
+ amount_now,              # numeric
+ monthly_contribution,    # numeric
+
+ risk_low, risk_medium, risk_high,   # one-hot
+
+ horizon_short, horizon_medium, horizon_long,   # one-hot
+
+ goal_growth, goal_income, goal_preservation,   # one-hot
+
+ experience_beginner, experience_intermediate, experience_advanced,  # one-hot
+
+ values_esg, values_tech, values_dividend       # multi-hot (can be multiple 1s)
+]
+
+Example User Vector: 
+[
+ 5000,
+ 300,
+
+ 0,1,0,          # medium risk
+
+ 0,0,1,          # long-term
+
+ 1,0,0,          # growth
+
+ 1,0,0,          # beginner
+
+ 1,1,0           # ESG + tech
+]
+
+investment vector = numbers that describe the asset
+
+[
+ is_stock, is_etf, is_bond,
+ risk_low, risk_medium, risk_high,
+ sector_tech, sector_health, sector_energy, sector_finance,
+ expense_ratio,
+ dividend_yield,
+ volatility,
+ esg_score,
+ is_index_fund
+]
