@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -49,7 +50,7 @@ elif st.session_state.page == "survey":
     st.header("What are your main goals")
 
     investment_goals = st.selectbox("What is your main investment goal?",
-    ["Growth", "Retirement", "Education", "Emergency Fund"], help="Select your main investment goal")
+    ["Growth", "Retirement", "Education" ], help="Select your main investment goal")
 
     time_horizon = st.selectbox("How long do you plan to invest?",
     ["Short-term (1-3 years)", "Medium-term (3-10 years)", "Long-term (10+ years)"], help="Select your time horizon")
@@ -107,29 +108,22 @@ elif st.session_state.page == "survey":
     # --- Section: Preferences ---
     st.header("Your Preferences")
 
-values_preferences = st.multiselect(
-    "Are there any values you care about when investing?",
-    [
-        "Climate-friendly companies",
-        "Strong labor practices",
-        "Diverse leadership",
-        "Ethical business practices",
-        "Avoid fossil fuels",
-        "Avoid controversial industries",
-        "No strong preference"
-    ]
-)
+    values_preferences = st.multiselect(
+        "Are there any values you care about when investing?",
+        [
+            "Climate-friendly companies",
+            "Strong labor practices",
+            "Diverse leadership",
+            "Ethical business practices",
+            "Avoid fossil fuels",
+            "Avoid controversial industries",
+            "No strong preference"
+        ]
+    )
 
     # --- Submit Button ---
-    # submit form
     if st.button("Submit"):
-        st.write("Thank you for your answers!")
-        st.session_state.page = "results"
-
-# creates a dictionary of the user's answers
-
-    if st.button("Submit"):
-        st.session_state.user_profile = {
+        user_profile = {
             "investment_basics": investment_basics,
             "monthly_contribution": monthly_contribution,
             "investment_goals": investment_goals,
@@ -142,9 +136,13 @@ values_preferences = st.multiselect(
             "values_preferences": values_preferences
         }
 
+        # store in session (temporary)
+        st.session_state.user_profile = user_profile
+
+        # save to JSON file (permanent)
+        with open("user_profiles.jsonl", "a") as f:
+            json.dump(user_profile, f)
+            f.write("\n")
+
         st.session_state.page = "results"
         st.rerun()
-
-elif st.session_state.page == "results":
-    st.header("Your Investor Profile")
-    st.json(st.session_state.user_profile)

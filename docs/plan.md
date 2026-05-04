@@ -1,295 +1,461 @@
-# 📈 InvestMatch AI — Full Roadmap
+# 📈 InvestMatch AI — Updated Checklist Roadmap + File Map
 
 ## 🎯 Project Goal
-
-Build an **ML-powered investment recommender** that:
-
-- Learns user preferences
-- Matches users to stocks/ETFs
-- Uses real performance data
-- Shows charts + explanations
-- Improves using feedback over time
-
-> ⚠️ This is NOT a stock prediction app.  
-> It is a **personalized recommendation system**.
+Build a personalized investment recommendation system using:
+- User input
+- Rule-based logic
+- Machine learning
+- Feedback loops
+- Optional GPT explanations
 
 ---
 
-# 🟦 PHASE 0: Foundations
+# 📁 PROJECT STRUCTURE
 
-## Goal
-Understand the system before coding
-
-## Tasks
-- [ X] Understand recommender systems vs prediction models
-- [ X] Understand ML pipeline: input → model → output
-- [X ] Understand user vector
-- [ X] Understand investment vector
-- [ X] Understand match score
-- [X ] Understand feedback loops
-- [ ] Add disclaimer: "Educational only, not financial advice"
+FINMATCH/
+│
+├── app.py
+│   - Main Streamlit app
+│   - Controls navigation: home → survey → results
+│   - Calls cleaning, rules, recommendations, and saving functions
+│
+├── data/
+│   ├── investments.csv
+│   │   - Stock/ETF dataset
+│   │   - Used for investment features later
+│   │
+│   ├── user_profiles.jsonl
+│   │   - Raw survey answers
+│   │   - Saved before cleaning
+│   │
+│   └── training_data.jsonl
+│       - Cleaned profile + pathway + recommendations
+│       - Used later for ML training
+│
+├── docs/
+│   ├── plan.md
+│   │   - Main roadmap/checklist
+│   │
+│   └── learningML.md
+│       - Notes while learning ML concepts
+│
+├── models/
+│   └── investmatch_model.pt
+│       - Saved PyTorch model later
+│
+└── src/
+    └── main/
+        ├── survey.py
+        │   - Survey/helper UI functions
+        │
+        ├── model.py
+        │   - PyTorch model class later
+        │
+        ├── train.py
+        │   - Training script later
+        │
+        └── logic/
+            ├── schema.py
+            │   - clean_profile()
+            │   - Turns raw survey answers into clean labels
+            │
+            ├── rules.py
+            │   - get_pathway()
+            │   - Chooses ETF-only / ETF-heavy / balanced / growth
+            │
+            ├── recommendations.py
+            │   - get_recommendations()
+            │   - Maps pathway to actual investment suggestions
+            │
+            └── save_data.py
+                - save_training_example()
+                - Saves cleaned training examples to JSONL
 
 ---
 
-# 🟩 PHASE 1: User Onboarding
+# 🟦 PHASE 0: Foundations ✅
 
 ## Goal
-Collect structured user preference data
+Understand system components.
 
-## Tasks
-- [ ] Ask initial investment amount
-- [ ] Ask monthly contribution
-- [ ] Ask risk tolerance (low, medium, high)
-- [ ] Ask time horizon (short, medium, long)
-- [ ] Ask goal (retirement, growth, income, learning, stock picking)
-- [ ] Ask experience level
-- [ ] Ask preferred sectors (tech, AI, healthcare, finance, etc.)
-- [ ] Ask growth vs dividend preference
-- [ ] Ask values preferences (ESG, climate, etc.)
+## Files Used
+- docs/learningML.md
+- docs/plan.md
 
-## Learn
-- [ ] Form design
-- [ ] User profiling
-- [ ] Mapping inputs → ML features
+## Checklist
+- [x] Understand ML pipeline: input → model → output
+- [x] Understand user vector
+- [x] Understand investment vector
+- [x] Understand match score
+- [x] Understand rules vs ML
+- [x] Understand feedback loops
+- [ ] Add disclaimer to app.py
 
 ---
 
-# 🟨 PHASE 2: Database + UI
+# 🟩 PHASE 1: User Onboarding Streamlit ✅
 
 ## Goal
-Store all system data
+Collect structured user data.
 
-## Tasks
-- [ ] Create project structure
-- [ ] Set up SQLite database
+## Files Used
+- app.py
+- src/main/survey.py optional later
+- data/user_profiles.jsonl
 
-### Tables
-- [ ] user_profiles
-- [ ] user_preferences
-- [ ] investments
-- [ ] stock_data
-- [ ] feedback
-- [ ] user_watchlist
-- [ ] user_portfolio
+## Checklist
+- [x] Build Streamlit survey UI
+- [x] Ask investment amount
+- [x] Ask monthly contribution
+- [x] Ask goals
+- [x] Ask time horizon
+- [x] Ask risk preference
+- [x] Ask experience level
+- [x] Ask preferred sectors
+- [x] Ask investment types
+- [x] Ask values/preferences
+- [x] Store responses in user_profile
+- [x] Add navigation: home → survey → results
+- [x] Save raw answers to data/user_profiles.jsonl
 
-## UI
-- [ ] Build Streamlit interface
+---
 
-## Learn
-- [ ] CRUD operations
-- [ ] DB schema design
-- [ ] UI → DB flow
+# 🟦 PHASE 1.5: Schema + Rule Engine 🔄 CURRENT
+
+## Goal
+Turn user input into structured data and generate first recommendations.
+
+---
+
+## Step 1: Clean Schema
+
+## File Used
+- src/main/logic/schema.py
+
+## Function
+- clean_profile(user_profile)
+
+## Checklist
+- [X ] Create clean_profile from raw survey data
+- [ X] Map risk answers → low / medium / high
+- [X ] Map time horizon → short / medium / long
+- [X ] Normalize experience levels
+- [X ] Clean sector lists
+- [X ] Clean values lists
+- [ X] Return one clean dictionary
+
+---
+
+## Step 2: Rule-Based Pathways
+
+## File Used
+- src/main/logic/rules.py
+
+## Function
+- get_pathway(cleaned_profile)
+
+## Checklist
+- [ ] Create ETF-only rule: low amount + beginner
+- [ ] Create ETF-heavy rule: low risk
+- [ ] Create balanced portfolio rule: medium risk
+- [ ] Create growth portfolio rule: high risk + long horizon
+- [ ] Create values-based filtering rule
+- [ ] Return pathway name
+
+---
+
+## Step 3: Generate Recommendations
+
+## File Used
+- src/main/logic/recommendations.py
+
+## Function
+- get_recommendations(pathway, cleaned_profile)
+
+## Checklist
+- [ ] Map pathways → actual tickers
+- [ ] Return 2–5 investment recommendations
+- [ ] Include ticker
+- [ ] Include investment name
+- [ ] Include asset type
+- [ ] Include risk level
+- [ ] Include reasoning string
+
+---
+
+## Step 4: Save Training Data
+
+## File Used
+- src/main/logic/save_data.py
+- data/training_data.jsonl
+
+## Function
+- save_training_example(cleaned_profile, pathway, recommendations)
+
+## Checklist
+- [ ] Save cleaned_profile
+- [ ] Save pathway
+- [ ] Save recommended_investments
+- [ ] Save label_source as rule_based
+- [ ] Save feedback as null
+- [ ] Append to data/training_data.jsonl
+
+---
+
+## Step 5: Connect Phase 1.5 to Streamlit
+
+## File Used
+- app.py
+
+## Checklist
+- [ ] Import clean_profile from schema.py
+- [ ] Import get_pathway from rules.py
+- [ ] Import get_recommendations from recommendations.py
+- [ ] Import save_training_example from save_data.py
+- [ ] On submit, create raw user_profile
+- [ ] Run cleaned_profile = clean_profile(user_profile)
+- [ ] Run pathway = get_pathway(cleaned_profile)
+- [ ] Run recommendations = get_recommendations(pathway, cleaned_profile)
+- [ ] Run save_training_example(cleaned_profile, pathway, recommendations)
+- [ ] Store results in st.session_state
+- [ ] Display recommendations on results page
+
+---
+
+# 🟨 PHASE 2: Data Storage
+
+## Goal
+Organize and persist data.
+
+## Files Used
+- data/user_profiles.jsonl
+- data/training_data.jsonl
+- src/main/logic/save_data.py
+
+## Checklist
+- [x] Save raw JSON data
+- [ ] Structure JSON format consistently
+- [ ] Save cleaned training data separately
+- [ ] Handle multiple users
+- [ ] Add timestamps
+- [ ] Optional: move to SQLite later
 
 ---
 
 # 🟧 PHASE 3: Investment Data Layer
 
 ## Goal
-Use real stock/ETF data
+Create investment dataset.
 
-## Tasks
-- [ ] Create CSV with 30–50 stocks/ETFs
-- [ ] Add ticker, name, sector, asset_type
+## Files Used
+- data/investments.csv
+- src/main/logic/recommendations.py
+
+## Checklist
+- [ ] Create CSV with 30–100 stocks/ETFs
+- [ ] Add ticker
+- [ ] Add company/fund name
+- [ ] Add sector
+- [ ] Add asset type
 - [ ] Add risk level
+- [ ] Add volatility
+- [ ] Add returns
 - [ ] Add dividend yield
-- [ ] Add ETF expense ratio
-
-## API Integration
-- [ ] Integrate yfinance
-- [ ] Fetch 1-year price history
-- [ ] Fetch 5-year price history
-- [ ] Calculate 1Y return
-- [ ] Calculate volatility
-- [ ] Store processed data in DB
-
-## Learn
-- [ ] Financial metrics
-- [ ] API usage
-- [ ] Data cleaning
+- [ ] Optional: add ESG data
+- [ ] Optional: connect yfinance API later
 
 ---
 
-# 🟨 PHASE 4: Rule-Based Logic (Fallback)
+# 🟨 PHASE 4: Feature Engineering
 
 ## Goal
-Provide safe baseline recommendations
+Convert data into numerical vectors.
 
-## Tasks
-- [ ] Low risk → ETF-heavy strategy
-- [ ] Long-term → diversified growth strategy
-- [ ] High risk → stock-heavy strategy
-- [ ] Dividend → income-focused strategy
-- [ ] Values-based → ESG filtering
-- [ ] Use rules when ML confidence is low
-
----
-
-# 🟧 PHASE 5: Feature Engineering
-
-## Goal
-Convert data into ML-ready format
+## Files Used
+- src/main/features.py
+- data/investments.csv
+- data/training_data.jsonl
 
 ## User Features
-- [ ] Encode risk tolerance
+- [ ] Encode risk level
 - [ ] Encode goal
 - [ ] Encode time horizon
 - [ ] Normalize investment amount
 - [ ] One-hot encode sectors
 - [ ] Encode values preferences
-- [ ] Encode growth vs dividend
 
 ## Investment Features
 - [ ] Encode sector
-- [ ] Encode asset_type
-- [ ] Include volatility
-- [ ] Include 1Y return
-- [ ] Include 5Y return
-- [ ] Include dividend yield
-- [ ] Include expense ratio
+- [ ] Encode asset type
+- [ ] Add volatility score
+- [ ] Add return metrics
+- [ ] Add dividend yield
 
 ## Final Input
-[user_vector + investment_vector] → model → match_score
+- [ ] Combine user_vector + investment_vector
+- [ ] Create X training matrix
+- [ ] Create y label vector
 
 ---
 
-# 🟥 PHASE 6: PyTorch Basics
+# 🟥 PHASE 5: ML Model PyTorch
 
 ## Goal
-Learn ML fundamentals
+Learn recommendation patterns.
 
-## Tasks
-- [ ] Create tensors
-- [ ] Build simple model (nn.Linear)
-- [ ] Forward pass
-- [ ] Compute loss
-- [ ] Backward pass
-- [ ] Use Adam optimizer
-- [ ] Save/load model
+## Files Used
+- src/main/model.py
+- src/main/train.py
+- models/investmatch_model.pt
+
+## Checklist
+- [ ] Build simple neural network
+- [ ] Create input layer
+- [ ] Create hidden layer with ReLU
+- [ ] Create output layer with Sigmoid
+- [ ] Output match score between 0 and 1
+- [ ] Choose loss function
+- [ ] Set learning rate
+- [ ] Train on collected data
+- [ ] Save model to models/investmatch_model.pt
 
 ---
 
-# 🟪 PHASE 7: ML Match Model
+# 🟪 PHASE 6: Recommendation Engine
 
 ## Goal
-Build recommender model
+Rank investments.
 
-## Tasks
-- [ ] Create InvestmentRecommender class
-- [ ] Input layer
-- [ ] Hidden layer (ReLU)
-- [ ] Output layer (Sigmoid)
-- [ ] Output match score (0–1)
-- [ ] Rank investments by score
+## Files Used
+- src/main/recommender.py
+- src/main/features.py
+- src/main/model.py
+- data/investments.csv
+- models/investmatch_model.pt
 
----
-
-# 🟫 PHASE 8: Feedback Training
-
-## Goal
-Personalize recommendations
-
-## Tasks
-- [ ] Add 👍 (like)
-- [ ] Add 👎 (dislike)
-- [ ] Add "save to watchlist"
-- [ ] Add "add to portfolio"
-- [ ] Store feedback
-- [ ] Convert feedback → labels (1/0)
-- [ ] Retrain model with feedback
-
----
-
-# ⚫ PHASE 9: Recommendation Engine
-
-## Goal
-Generate ranked results
-
-## Tasks
+## Checklist
 - [ ] Load user profile
-- [ ] Load stock dataset
-- [ ] Generate feature vectors
-- [ ] Run ML model
+- [ ] Load investment dataset
+- [ ] Convert user profile to vector
+- [ ] Convert each investment to vector
+- [ ] Combine user_vector + investment_vector
+- [ ] Run model inference
 - [ ] Score each investment
 - [ ] Sort results
-- [ ] Return top recommendations
-- [ ] Attach performance + risk data
+- [ ] Return top 5
 
 ---
 
-# ⚪ PHASE 10: Recommendation Cards + Charts
+# 🟫 PHASE 7: Feedback Loop
 
 ## Goal
-Make recommendations understandable
+Improve recommendations.
 
-## Each Card Includes
-- [ ] Ticker
-- [ ] Name
-- [ ] Match score
-- [ ] Sector
-- [ ] Risk level
-- [ ] 1-year return
-- [ ] Volatility
-- [ ] 1-year price chart
-- [ ] Explanation: why it matches
-- [ ] Risk warning
-- [ ] Suggested role (core/growth/dividend)
+## Files Used
+- app.py
+- data/training_data.jsonl
+- data/feedback.jsonl
+- src/main/logic/save_data.py
+
+## Checklist
+- [ ] Add thumbs up/down buttons
+- [ ] Add save/watchlist button
+- [ ] Store feedback
+- [ ] Convert feedback to labels: 1 or 0
+- [ ] Add feedback examples to training data
+- [ ] Retrain model
 
 ---
 
-# 🟤 PHASE 11: Dashboard
+# ⚪ PHASE 8: UI + Output
 
 ## Goal
-Track investments
+Make results usable.
 
-## Tasks
-- [ ] Watchlist view
-- [ ] Portfolio view
-- [ ] Saved recommendations
-- [ ] Portfolio growth chart
-- [ ] Sector allocation chart
-- [ ] Risk breakdown chart
-- [ ] Notes for each investment
+## Files Used
+- app.py
+- src/main/survey.py optional
+- src/main/recommender.py
+
+## Checklist
+- [ ] Show recommendations
+- [ ] Show ticker + name
+- [ ] Show risk level
+- [ ] Show match score
+- [ ] Show reasoning
+- [ ] Add charts for price history
+- [ ] Add warnings
+- [ ] Add educational explanation
 
 ---
 
-# 🟣 PHASE 12: GPT Explanation Layer
+# 🟣 PHASE 9: GPT Layer Optional
 
 ## Goal
-Generate human-readable insights
+Explain recommendations.
 
-## Tasks
-- [ ] Generate explanation: "why this matches you"
-- [ ] Explain company
-- [ ] Highlight risks
-- [ ] Summarize performance
-- [ ] Add citations
-- [ ] Include disclaimer
+## Files Used
+- src/main/gpt_explainer.py
+- app.py
 
----
-
-# 🔄 FINAL FLOW
-
+## Checklist
+- [ ] Generate explanation text
+- [ ] Explain why picks match user
+- [ ] Summarize risks
+- [ ] Keep educational tone
+- [ ] Add strong disclaimer
 
 ---
 
-# 🚀 MVP CHECKLIST
+# 🔄 FINAL SYSTEM FLOW
 
-Before adding advanced features:
-
-- [ ] 30+ stocks loaded
-- [ ] Working user survey
-- [ ] Feature vectors working
-- [ ] Basic ML model running
-- [ ] Top 5 recommendations displayed
-- [ ] At least 1 chart working
+Survey  
+→ Raw user_profile  
+→ clean_profile()  
+→ get_pathway()  
+→ get_recommendations()  
+→ save_training_example()  
+→ Feature Engineering  
+→ ML Model  
+→ Ranking  
+→ UI  
+→ Feedback  
+→ Improvement  
 
 ---
 
-# 🔥 FUTURE UPGRADES
+# 🚀 CURRENT STATUS
 
-- [ ] Real-time stock data
-- [ ] Portfolio optimization
-- [ ] Multi-user accounts
-- [ ] News + sentiment analysis
-- [ ] React frontend + FastAPI backend
-- [ ] Advanced ML models
+- Phase 0 ✅
+- Phase 1 ✅
+- Phase 1.5 🔄 YOU ARE HERE
+
+---
+
+# 🎯 IMMEDIATE NEXT STEPS
+
+## Create these files first:
+- [ ] src/main/logic/schema.py
+- [ ] src/main/logic/rules.py
+- [ ] src/main/logic/recommendations.py
+- [ ] src/main/logic/save_data.py
+
+## Build in this order:
+1. schema.py → clean_profile()
+2. rules.py → get_pathway()
+3. recommendations.py → get_recommendations()
+4. save_data.py → save_training_example()
+5. app.py → connect everything
+
+---
+
+# 🧠 Current Coding Task
+
+## File
+src/main/logic/schema.py
+
+## Function
+clean_profile(user_profile)
+
+## Purpose
+Translate raw Streamlit answers into consistent machine-readable labels.
