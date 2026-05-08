@@ -35,7 +35,7 @@ def clean_profile(user_profile):
     elif raw_time == "Long-term (10+ years)":
         cleaned_profile["time_horizon"] = "long"
     else:
-        cleaned_profile["time_horizon"] = []
+        cleaned_profile["time_horizon"] = None
 
     # 5. experience mapping
     raw_exp = user_profile["experience_level"]
