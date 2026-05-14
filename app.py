@@ -1,5 +1,18 @@
-import streamlit as st
 import json
+import sys
+from pathlib import Path
+
+import streamlit as st
+
+_APP_DIR = Path(__file__).resolve().parent
+_LOGIC_DIR = _APP_DIR / "src" / "main" / "logic"
+if str(_LOGIC_DIR) not in sys.path:
+    sys.path.insert(0, str(_LOGIC_DIR))
+
+from schema import clean_profile
+from rules import get_pathway
+from recommendations import get_recommendations
+from save_data import save_training_example
 
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -136,13 +149,48 @@ elif st.session_state.page == "survey":
             "values_preferences": values_preferences
         }
 
-        # store in session (temporary)
         st.session_state.user_profile = user_profile
 
-        # save to JSON file (permanent)
-        with open("user_profiles.jsonl", "a") as f:
+        cleaned_profile = clean_profile(user_profile)
+        pathway = get_pathway(cleaned_profile)
+        recommendations = get_recommendations(pathway, cleaned_profile)
+        save_training_example(cleaned_profile, pathway, recommendations)
+
+        st.session_state.cleaned_profile = cleaned_profile
+        st.session_state.pathway = pathway
+        st.session_state.recommendations = recommendations
+
+        data_dir = _APP_DIR / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        raw_profiles_path = data_dir / "user_profiles.jsonl"
+        with raw_profiles_path.open("a", encoding="utf-8") as f:
             json.dump(user_profile, f)
             f.write("\n")
 
         st.session_state.page = "results"
         st.rerun()
+
+elif st.session_state.page == "results":
+    st.title("Your recommendations")
+
+    if "recommendations" not in st.session_state:
+        st.warning("No results yet. Complete the survey first.")
+        if st.button("Go to survey"):
+            st.session_state.page = "survey"
+            st.rerun()
+    else:
+        st.subheader("Pathway")
+        st.write(st.session_state.get("pathway", "—"))
+
+        st.subheader("Suggested investments (educational)")
+        for item in st.session_state.recommendations:
+            with st.expander(f"{item.get('ticker', '?')} — {item.get('name', '')}"):
+                st.write(f"**Asset type:** {item.get('asset_type', '—')}")
+                st.write(f"**Risk level:** {item.get('risk_level', '—')}")
+                st.write(item.get("reasoning", ""))
+
+        if st.button("Start over"):
+            for key in ("user_profile", "cleaned_profile", "pathway", "recommendations"):
+                st.session_state.pop(key, None)
+            st.session_state.page = "home"
+            st.rerun()

@@ -4,9 +4,21 @@
 Build a personalized investment recommendation system using:
 - User input
 - Rule-based logic
-- Machine learning
-- Feedback loops
+- Financial analytics (returns, risk, drawdowns)
+- Classical ML first (scikit-learn), then optional deep learning
+- Feedback loops and retraining
 - Optional GPT explanations
+
+## Architecture layers (keep responsibilities split)
+
+| Layer | Job |
+|--------|-----|
+| Streamlit / UI | Display inputs, results, charts |
+| Rules | Decide pathway and baseline picks |
+| API layer | Fetch prices, fundamentals, history |
+| Analytics (`metrics.py`) | Compute returns, volatility, Sharpe, drawdowns, risk scores |
+| Storage | Persist profiles, training rows, feedback |
+| ML | Learn patterns from vectors + labels |
 
 ---
 
@@ -40,8 +52,10 @@ FINMATCH/
 │       - Notes while learning ML concepts
 │
 ├── models/
-│   └── investmatch_model.pt
-│       - Saved PyTorch model later
+│   ├── investmatch_model.joblib (or .pkl)
+│   │   - Saved scikit-learn model (Phase 5)
+│   └── investmatch_nn.pt (optional, later)
+│       - PyTorch checkpoint if you add deep learning (Phase 9)
 │
 └── src/
     └── main/
@@ -49,10 +63,14 @@ FINMATCH/
         │   - Survey/helper UI functions
         │
         ├── model.py
-        │   - PyTorch model class later
+        │   - Optional: sklearn wrapper or PyTorch module (later)
         │
         ├── train.py
-        │   - Training script later
+        │   - Training script (sklearn first; PyTorch experiments optional)
+        │
+        ├── api/
+        │   └── investment_api.py
+        │       - Fetch market data (e.g. yfinance); Phase 3
         │
         └── logic/
             ├── schema.py
@@ -66,6 +84,10 @@ FINMATCH/
             ├── recommendations.py
             │   - get_recommendations()
             │   - Maps pathway to actual investment suggestions
+            │
+            ├── metrics.py
+            │   - Annual return, volatility, moving averages, max drawdown, Sharpe, risk score
+            │   - Phase 3.5: analytics “brains” for features + UI later
             │
             └── save_data.py
                 - save_training_example()
@@ -89,7 +111,7 @@ Understand system components.
 - [x] Understand match score
 - [x] Understand rules vs ML
 - [x] Understand feedback loops
-- [ ] Add disclaimer to app.py
+- [x] Add disclaimer to app.py
 
 ---
 
@@ -120,7 +142,7 @@ Collect structured user data.
 
 ---
 
-# 🟦 PHASE 1.5: Schema + Rule Engine 🔄 CURRENT
+# 🟦 PHASE 1.5: Schema + Rule Engine ✅
 
 ## Goal
 Turn user input into structured data and generate first recommendations.
@@ -155,12 +177,12 @@ Turn user input into structured data and generate first recommendations.
 - get_pathway(cleaned_profile)
 
 ## Checklist
-- [ ] Create ETF-only rule: low amount + beginner
-- [ ] Create ETF-heavy rule: low risk
-- [ ] Create balanced portfolio rule: medium risk
-- [ ] Create growth portfolio rule: high risk + long horizon
-- [ ] Create values-based filtering rule
-- [ ] Return pathway name
+- [ X] Create ETF-only rule: low amount + beginner
+- [ X] Create ETF-heavy rule: low risk
+- [X ] Create balanced portfolio rule: medium risk
+- [ X] Create growth portfolio rule: high risk + long horizon
+- [ X] Create values-based filtering rule
+- [ X] Return pathway name
 
 ---
 
@@ -173,13 +195,13 @@ Turn user input into structured data and generate first recommendations.
 - get_recommendations(pathway, cleaned_profile)
 
 ## Checklist
-- [ ] Map pathways → actual tickers
-- [ ] Return 2–5 investment recommendations
-- [ ] Include ticker
-- [ ] Include investment name
-- [ ] Include asset type
-- [ ] Include risk level
-- [ ] Include reasoning string
+- [ X] Map pathways → actual tickers
+- [X ] Return 2–5 investment recommendations
+- [X ] Include ticker
+- [ X] Include investment name
+- [ X] Include asset type
+- [ X] Include risk level
+- [ X ] Include reasoning string
 
 ---
 
@@ -193,12 +215,12 @@ Turn user input into structured data and generate first recommendations.
 - save_training_example(cleaned_profile, pathway, recommendations)
 
 ## Checklist
-- [ ] Save cleaned_profile
-- [ ] Save pathway
-- [ ] Save recommended_investments
-- [ ] Save label_source as rule_based
-- [ ] Save feedback as null
-- [ ] Append to data/training_data.jsonl
+- [x] Save cleaned_profile
+- [x] Save pathway
+- [x] Save recommended_investments
+- [x] Save label_source as rule_based
+- [x] Save feedback as null
+- [x] Append to data/training_data.jsonl
 
 ---
 
@@ -208,17 +230,17 @@ Turn user input into structured data and generate first recommendations.
 - app.py
 
 ## Checklist
-- [ ] Import clean_profile from schema.py
-- [ ] Import get_pathway from rules.py
-- [ ] Import get_recommendations from recommendations.py
-- [ ] Import save_training_example from save_data.py
-- [ ] On submit, create raw user_profile
-- [ ] Run cleaned_profile = clean_profile(user_profile)
-- [ ] Run pathway = get_pathway(cleaned_profile)
-- [ ] Run recommendations = get_recommendations(pathway, cleaned_profile)
-- [ ] Run save_training_example(cleaned_profile, pathway, recommendations)
-- [ ] Store results in st.session_state
-- [ ] Display recommendations on results page
+- [x] Import clean_profile from schema.py
+- [x] Import get_pathway from rules.py
+- [x] Import get_recommendations from recommendations.py
+- [x] Import save_training_example from save_data.py
+- [x] On submit, create raw user_profile
+- [x] Run cleaned_profile = clean_profile(user_profile)
+- [x] Run pathway = get_pathway(cleaned_profile)
+- [x] Run recommendations = get_recommendations(pathway, cleaned_profile)
+- [x] Run save_training_example(cleaned_profile, pathway, recommendations)
+- [x] Store results in st.session_state
+- [x] Display recommendations on results page
 
 ---
 
@@ -245,13 +267,23 @@ Organize and persist data.
 # 🟧 PHASE 3: Investment Data Layer
 
 ## Goal
-Create investment dataset.
+Fetch live investment data from APIs.
 
 ## Files Used
 - data/investments.csv
 - src/main/logic/recommendations.py
+- src/main/api/investment_api.py
 
 ## Checklist
+- [ ] Install yfinance
+- [ ] Fetch stock data
+- [ ] Fetch ETF data
+- [ ] Pull dividend yield
+- [ ] Pull market cap
+- [ ] Pull historical prices
+- [ ] Handle invalid tickers
+- [ ] Return structured dictionaries
+
 - [ ] Create CSV with 30–100 stocks/ETFs
 - [ ] Add ticker
 - [ ] Add company/fund name
@@ -261,8 +293,26 @@ Create investment dataset.
 - [ ] Add volatility
 - [ ] Add returns
 - [ ] Add dividend yield
-- [ ] Optional: add ESG data
-- [ ] Optional: connect yfinance API later
+
+
+---
+
+# 🟦 PHASE 3.5: Financial Analytics Engine
+
+## Goal
+Calculate investment metrics from price history (and related inputs). This becomes the quantitative “brains” behind features, ranking, and UI charts later.
+
+## Files Used
+- src/main/logic/metrics.py
+- (Inputs) price series from Phase 3 API or CSV-derived history
+
+## Checklist
+- [ ] Calculate annual return
+- [ ] Calculate volatility
+- [ ] Calculate moving averages
+- [ ] Calculate max drawdown
+- [ ] Calculate Sharpe ratio
+- [ ] Create risk scoring formula (document assumptions, e.g. risk-free rate)
 
 ---
 
@@ -275,6 +325,7 @@ Convert data into numerical vectors.
 - src/main/features.py
 - data/investments.csv
 - data/training_data.jsonl
+- src/main/logic/metrics.py (reuse analytics outputs as investment features where applicable)
 
 ## User Features
 - [ ] Encode risk level
@@ -298,26 +349,30 @@ Convert data into numerical vectors.
 
 ---
 
-# 🟥 PHASE 5: ML Model PyTorch
+# 🟥 PHASE 5: Classical ML Recommender (scikit-learn first)
 
 ## Goal
-Learn recommendation patterns.
+Learn recommendation patterns with tabular models before deep learning. Start simple, interpretable, and fast to iterate.
+
+## Why not PyTorch first
+Neural nets are powerful but easy to overfit on small JSONL datasets. Logistic regression / random forest / gradient boosting match typical recommender-system bootstraps when features are structured.
 
 ## Files Used
-- src/main/model.py
 - src/main/train.py
-- models/investmatch_model.pt
+- src/main/model.py (optional: thin wrappers around sklearn pipelines)
+- src/main/features.py
+- data/training_data.jsonl
+- models/investmatch_model.joblib (or .pkl)
 
 ## Checklist
-- [ ] Build simple neural network
-- [ ] Create input layer
-- [ ] Create hidden layer with ReLU
-- [ ] Create output layer with Sigmoid
-- [ ] Output match score between 0 and 1
-- [ ] Choose loss function
-- [ ] Set learning rate
-- [ ] Train on collected data
-- [ ] Save model to models/investmatch_model.pt
+- [ ] Add scikit-learn to project dependencies
+- [ ] Define `X` from user + investment feature vectors (Phase 4)
+- [ ] Define `y` (e.g. match / click / feedback label when available)
+- [ ] Start with **logistic regression** baseline (calibrated probabilities if needed)
+- [ ] Try **random forest** or **gradient boosting** (e.g. **XGBoost** / HistGradientBoosting later)
+- [ ] Cross-validate; track metrics (AUC, log loss, or ranking metrics you choose)
+- [ ] Train on collected data (rule-based labels first; improve with Phase 7 feedback)
+- [ ] Save model with `joblib.dump` (or pickle) to `models/investmatch_model.joblib`
 
 ---
 
@@ -329,9 +384,9 @@ Rank investments.
 ## Files Used
 - src/main/recommender.py
 - src/main/features.py
-- src/main/model.py
+- src/main/train.py (load trained sklearn model)
 - data/investments.csv
-- models/investmatch_model.pt
+- models/investmatch_model.joblib
 
 ## Checklist
 - [ ] Load user profile
@@ -339,7 +394,7 @@ Rank investments.
 - [ ] Convert user profile to vector
 - [ ] Convert each investment to vector
 - [ ] Combine user_vector + investment_vector
-- [ ] Run model inference
+- [ ] Run sklearn model `predict` / `predict_proba` (or decision_function)
 - [ ] Score each investment
 - [ ] Sort results
 - [ ] Return top 5
@@ -376,6 +431,7 @@ Make results usable.
 - app.py
 - src/main/survey.py optional
 - src/main/recommender.py
+- src/main/logic/metrics.py (charts: returns, drawdowns, moving averages)
 
 ## Checklist
 - [ ] Show recommendations
@@ -389,7 +445,26 @@ Make results usable.
 
 ---
 
-# 🟣 PHASE 9: GPT Layer Optional
+# 🟥 PHASE 9: Deep Learning Experiments (Optional, later)
+
+## Goal
+After classical ML and enough data, experiment with neural networks if they add value (e.g. embeddings, deeper interaction models).
+
+## Files Used
+- src/main/model.py (PyTorch `nn.Module` or similar)
+- src/main/train_dl.py (optional separate script)
+- models/investmatch_nn.pt
+
+## Checklist
+- [ ] Add PyTorch only when baseline sklearn models are stable
+- [ ] Build a small network appropriate to data size (avoid huge MLPs on tiny JSONL)
+- [ ] Reuse Phase 4 feature pipeline where possible
+- [ ] Compare fairly against sklearn baseline (same train/val split)
+- [ ] Save checkpoint to `models/investmatch_nn.pt`
+
+---
+
+# 🟣 PHASE 10: GPT Layer Optional
 
 ## Goal
 Explain recommendations.
@@ -415,12 +490,15 @@ Survey
 → get_pathway()  
 → get_recommendations()  
 → save_training_example()  
+→ APIs (prices, fundamentals)  
+→ Analytics (metrics.py)  
 → Feature Engineering  
-→ ML Model  
+→ Classical ML (sklearn)  
 → Ranking  
 → UI  
 → Feedback  
-→ Improvement  
+→ Retrain  
+→ (Optional) Deep learning experiments  
 
 ---
 
@@ -428,34 +506,27 @@ Survey
 
 - Phase 0 ✅
 - Phase 1 ✅
-- Phase 1.5 🔄 YOU ARE HERE
+- Phase 1.5 ✅ (Streamlit wired; rules + JSONL pipeline live)
+- Next focus: Phase 2–3 (storage hardening + investment data / API), then Phase 3.5 metrics
 
 ---
 
 # 🎯 IMMEDIATE NEXT STEPS
 
-## Create these files first:
-- [ ] src/main/logic/schema.py
-- [ ] src/main/logic/rules.py
-- [ ] src/main/logic/recommendations.py
-- [ ] src/main/logic/save_data.py
-
-## Build in this order:
-1. schema.py → clean_profile()
-2. rules.py → get_pathway()
-3. recommendations.py → get_recommendations()
-4. save_data.py → save_training_example()
-5. app.py → connect everything
+## Suggested build order from here:
+1. Phase 2: tighten JSONL schema, timestamps, optional user id
+2. Phase 3: `investments.csv` + `src/main/api/investment_api.py` (yfinance)
+3. Phase 3.5: `src/main/logic/metrics.py` (returns, vol, MA, drawdown, Sharpe, risk score)
+4. Phase 4: `src/main/features.py` — vectors for user + investment (+ metrics)
+5. Phase 5: sklearn `train.py` — logistic regression → forest / boosting → save `joblib`
 
 ---
 
 # 🧠 Current Coding Task
 
-## File
-src/main/logic/schema.py
-
-## Function
-clean_profile(user_profile)
+## File (pick one track)
+- `src/main/api/investment_api.py` (Phase 3) **or**
+- `src/main/logic/metrics.py` (Phase 3.5)
 
 ## Purpose
-Translate raw Streamlit answers into consistent machine-readable labels.
+Grow the data + analytics layer so Phase 4–5 have real numeric features, not only rule labels.
